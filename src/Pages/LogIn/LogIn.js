@@ -1,12 +1,17 @@
+import { GoogleAuthProvider } from 'firebase/auth';
 import React, { useContext } from 'react';
+import { useState } from 'react';
 import {  Link, useLocation, useNavigate, } from 'react-router-dom';
 import img from '../../assets/images/login/login.svg'
 import { authContext } from '../../contexts/AuthProvider/AuthProvider';
 
 const LogIn = () => {
-    const {login} = useContext(authContext);
+    const {login,providerLogin} = useContext(authContext);
     const location = useLocation();
     const navigate = useNavigate();
+    const provider = new GoogleAuthProvider();
+    const [error,setError] = useState('');
+
 
     const from = location.state?.from?.pathname || '/';
 
@@ -21,9 +26,44 @@ const LogIn = () => {
         .then(result =>{
             const user = result.user;
             console.log(user)
-            navigate(from, { replace: true });
+            setError('')
+            form.reset()
+            
+            const currentUser = {
+                email : user.email
+            }
+
+            // get token
+            fetch('http://localhost:5000/jwt',{
+                method:'POST',
+                headers:{
+                    'content-type' : 'application/json'
+                },
+                body : JSON.stringify(currentUser)
+            })
+            .then(res=>res.json())
+            .then(data =>{
+                console.log(data)
+
+                localStorage.setItem('genius-token',data.token)
+                navigate(from, { replace: true });
+            })
+            
         })
-        .catch(error =>console.log(error))
+        .catch(error =>{
+            console.log(error)
+            setError(error.message)
+        })
+
+    }
+
+    const handleGoogleSignIn = ()=>{
+        providerLogin(provider)
+        .then(result=>{
+            const user = result.user;
+            console.log(user)
+        })
+        .catch(error =>console.error(error))
 
     }
     return (
@@ -55,7 +95,14 @@ const LogIn = () => {
                             <input className=' btn btn-primary' type="submit" value="Login" />
                             
                         </div>
+                        <div className="text-danger">
+                {error}
+            </div>
                     </form>
+                    <div className='mx-auto' >
+                        <button onClick={handleGoogleSignIn}  className=' btn btn-primary'>Google Login</button>
+                        
+            </div>
                     <p className='text-center'>New to Genius car <Link className='text-orange-600 font-bold ' to='/signup'>SignUp</Link></p>
                 </div>
             </div>

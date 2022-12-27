@@ -1,11 +1,14 @@
 
-import React, { useContext } from 'react';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import img from '../../assets/images/login/login.svg';
 import { authContext } from '../../contexts/AuthProvider/AuthProvider';
 
 const SignUp = () => {
-    const { createUser} = useContext(authContext);
+    const { createUser,providerLogin} = useContext(authContext);
+    const provider = new GoogleAuthProvider();
+    const [error, setError] = useState('');
 
     const handleSignUp = event =>{
         event.preventDefault();
@@ -16,10 +19,26 @@ const SignUp = () => {
         .then(result => {
             const user = result.user;
             console.log(user);
+            setError('')
         })
-        .catch(err => console.error(err));
+        .catch(err => {
+            console.error(err)
+            setError(error.message)
+        });
 
     }
+
+    const handleGoogleSignIn = ()=>{
+        providerLogin(provider)
+        .then(result=>{
+            const user = result.user;
+            console.log(user)
+        })
+        .catch(error =>console.error(error))
+
+    }
+
+
     return (
         <div className="hero w-full my-20">
         <div className="hero-content grid gap-20 md:grid-cols-2 flex-col lg:flex-row">
@@ -53,9 +72,18 @@ const SignUp = () => {
                         <input className=' btn btn-primary' type="submit" value="Sign Up" />
                         
                     </div>
-                </form>
-                <p className='text-center'>Already have an account?<Link className='text-orange-600 font-bold ' to='/login'>LogIn</Link></p>
+                    <div className="text-danger">
+                {error}
             </div>
+                </form>
+               <p className='text-center'>Already have an account?<Link className='text-orange-600 font-bold ' to='/login'>LogIn</Link></p>
+
+               <div className='mx-auto' >
+                        <button onClick={handleGoogleSignIn}  className=' btn btn-primary'>Google Login</button>
+                        
+            </div>
+            </div>
+            
         </div>
     </div>
     );
