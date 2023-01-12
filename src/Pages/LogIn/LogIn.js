@@ -3,6 +3,7 @@ import React, { useContext } from 'react';
 import { useState } from 'react';
 import {  Link, useLocation, useNavigate, } from 'react-router-dom';
 import img from '../../assets/images/login/login.svg'
+import { setAuthToken } from '../../contexts/api/auth';
 import { authContext } from '../../contexts/AuthProvider/AuthProvider';
 
 const LogIn = () => {
@@ -25,7 +26,7 @@ const LogIn = () => {
         login(email, password)
         .then(result =>{
             const user = result.user;
-            console.log(user)
+            // console.log(user)
             setError('')
             form.reset()
             
@@ -43,7 +44,7 @@ const LogIn = () => {
             })
             .then(res=>res.json())
             .then(data =>{
-                console.log(data)
+                // console.log(data)
 
                 localStorage.setItem('genius-token',data.token)
                 navigate(from, { replace: true });
@@ -62,6 +63,8 @@ const LogIn = () => {
         .then(result=>{
             const user = result.user;
             console.log(user)
+            setAuthToken(user)
+            navigate(from, { replace: true });
         })
         .catch(error =>console.error(error))
 

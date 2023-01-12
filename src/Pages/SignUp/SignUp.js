@@ -1,14 +1,19 @@
 
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import React, { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toast';
 import img from '../../assets/images/login/login.svg';
+import { setAuthToken } from '../../contexts/api/auth';
 import { authContext } from '../../contexts/AuthProvider/AuthProvider';
 
 const SignUp = () => {
     const { createUser,providerLogin} = useContext(authContext);
     const provider = new GoogleAuthProvider();
+    const location = useLocation();
+    const navigate = useNavigate();
     const [error, setError] = useState('');
+    const from = location.state?.from?.pathname || '/';
 
     const handleSignUp = event =>{
         event.preventDefault();
@@ -18,8 +23,12 @@ const SignUp = () => {
         createUser(email, password)
         .then(result => {
             const user = result.user;
+            setAuthToken(user)
+            toast('user created successfully')
             console.log(user);
             setError('')
+            form.reset()
+            navigate(from, { replace: true });
         })
         .catch(err => {
             console.error(err)
@@ -32,7 +41,9 @@ const SignUp = () => {
         providerLogin(provider)
         .then(result=>{
             const user = result.user;
+            setAuthToken(user)
             console.log(user)
+            navigate(from, { replace: true });
         })
         .catch(error =>console.error(error))
 
